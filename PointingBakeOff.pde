@@ -20,71 +20,7 @@ Robot robot; //initialized in setup
 
 int numRepeats = 1; //sets the number of times each button repeats in the test
 
-Glider glider;
-
-class Position {
-  int x;
-  int y;
-  Position(int x, int y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-class Vec {
-  float x;
-  float y;
-  Vec(float x, float y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-class Glider {
-  Position start;
-  Position target;
-  Vec normal;
-  float speed;
-  float progress;
-  Rectangle shape;
-  Glider(int start_x, int start_y) {
-    start = new Position(start_x, start_y);
-    speed = 0.40;
-    progress = 0.0;
-    shape = new Rectangle(start.x, start.y, 40, 40);
-  }
-  void set_glide(int target_x, int target_y) {
-     target = new Position(target_x, target_y);
-     float magnitude = mag(target.x, target.y);
-     normal = new Vec(target.x / magnitude, target.y / magnitude);
-     shape.x = start.x;
-     shape.y = start.y;
-     progress = 0.00;
-  }
-  void update() {
-     if (target == null) return;
-       
-     // If the glider has reached destination, deactivate
-     if (progress >= 1.00) {
-       target = null;
-       return;
-     }
-    
-     // Linear interpolation across line by progress
-     int new_x = start.x + (int)(progress * (target.x - start.x));
-     int new_y = start.y + (int)(progress * (target.y - start.y));
-     
-     shape.x = new_x;
-     shape.y = new_y;
-     
-     progress += speed;
-  }
-  void draw() {
-    if (target == null) return;
-    fill(0, 255, 0);
-    rect(shape.x, shape.y, shape.width, shape.height); 
-  }
-}
+int roundTick = 0;
 
 void setup()
 {
@@ -113,11 +49,7 @@ void setup()
 
   Collections.shuffle(trials); // randomize the order of the buttons
   System.out.println("trial order: " + trials);
-  
-  // Set first glider
-  Rectangle first_button = getButtonLocation(trials.get(trialNum));
-  glider = new Glider(width/2 - buttonSize/2, height/2 - buttonSize/2);
-  glider.set_glide(first_button.x, first_button.y);
+ 
   
   surface.setLocation(0,0);// put window in top left corner of screen (doesn't always work)
 }
@@ -148,9 +80,8 @@ void draw()
 
   for (int i = 0; i < 16; i++)// for all button
     drawButton(i); //draw button
-
-  glider.update();
-  glider.draw();
+    
+  roundTick++;
 }
 
 void mousePressed() // test to see if hit was in target!
@@ -187,11 +118,7 @@ void mousePressed() // test to see if hit was in target!
   //in this example code, we move the mouse back to the middle
   robot.mouseMove(width/2, height/2 + 70); //on click, move cursor to roughly center of window!
   
-  // Set next glider
-  if (trialNum < trials.size()) {
-    Rectangle next_button = getButtonLocation(trials.get(trialNum));
-    glider.set_glide(next_button.x, next_button.y);
-  }
+  roundTick = 0;
 }  
 
 //probably shouldn't have to edit this method
@@ -207,9 +134,13 @@ void drawButton(int i)
 {
   Rectangle bounds = getButtonLocation(i);
 
-  if (trials.get(trialNum) == i) // see if current button is the target
-    fill(70, 180, 70); // if so, fill green
-  else
+  if (trials.get(trialNum) == i) { // see if current button is the target
+    if (roundTick < 5) {
+      fill(200, 0, 0); // if so, fill green
+    } else {
+      fill(70, 180, 70);
+    }
+  } else
     fill(200); // if not, fill gray
 
   rect(bounds.x, bounds.y, bounds.width, bounds.height); //draw button
